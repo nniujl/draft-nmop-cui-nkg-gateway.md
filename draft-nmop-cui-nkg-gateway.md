@@ -1,7 +1,7 @@
 ---
 title: "A Gateway for Network Knowledge Graph Management"
 abbrev: "NKG Gateway"
-docname: draft-cui-nmop-nkg-gateway-00
+docname: draft-nmop-cui-nkg-gateway-latest
 category: info
 submissiontype: IETF
 ipr: trust200902
