@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rfc version="3" ipr="trust200902" docName="draft-cui-nmop-nkg-gateway-00" submissionType="IETF" category="info" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <front>
+    <title abbrev="NKG Gateway">A Gateway for Network Knowledge Graph Management</title>
+    <author initials="Y." surname="Cui" fullname="Yong Cui">
+      <organization>Tsinghua University</organization>
+      <address>
+        <email>cuiyong@tsinghua.edu.cn</email>
+      </address>
+    </author>
+    <date year="2026" month="February" day="27"/>
+    <area>OPS</area>
+    <workgroup>NMOP</workgroup>
+
+    <abstract>
+      <t>This document specifies an interaction gateway for Network Knowledge Graphs (NKG) to simplify graph-based operations. The gateway architecture defines a Unified Intent Gateway (UIG) that supports Natural Language (NL) and Domain-Specific Language (DSL) inputs. By utilizing LLM-based agents and rule engines, the UIG translates high-level intents into precise graph queries via an Intermediate Representation (IR). The gateway architecture incorporates multi-layer authentication and fine-grained access control to ensure secure and compliant network management.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="introduction" title="Introduction">
+      <section anchor="motivation" title="Motivation">
+        <t>Network Knowledge Graphs (NKG) provide a unified, associative, and semantic representation of network states and structures, supporting observability, automated operations, and intelligent management. In current operational scenarios, engineers primarily rely on structured query languages (e.g., Cypher or SPARQL) for interaction, which introduces the following challenges:</t>
+        <ul>
+          <li><strong>High Usage Barrier:</strong> Users must possess deep understanding of the underlying graph schema and relationship definitions.</li>
+          <li><strong>Schema Sensitivity:</strong> Evolution or changes in the graph schema often lead to query failures or biased results.</li>
+          <li><strong>High Cost of Multi-step Queries:</strong> Manual parameter tuning and logical debugging significantly reduce operational efficiency.</li>
+          <li><strong>Lack of Intent Abstraction and Semantic Validation:</strong> It is difficult to support high-level automation and security governance.</li>
+        </ul>
+        <t>Therefore, a unified and secure interaction gateway tailored for network operations is urgently required.</t>
+      </section>
+
+      <section anchor="problem-statement" title="Problem Statement">
+        <t>The central challenge is the absence of an intelligent interface capable of automatically translating high-level human intents (NL) or declarative application directives (DSL) into deep queries, inferences, or operations against the NKG, while meeting the following requirements:</t>
+        <ul>
+          <li><strong>Unified Heterogeneous Input:</strong> Consolidating inputs from both human operators and automated machines.</li>
+          <li><strong>Security and Compliance:</strong> Ensuring rigorous authentication, authorization, and operational compliance.</li>
+          <li><strong>Intent-to-Query Translation:</strong> Accurately transforming ambiguous intents into precise graph queries.</li>
+          <li><strong>Result Synthesis:</strong> Synthesizing structured graph data into comprehensible and consumable outputs (both structured and natural language).</li>
+        </ul>
+      </section>
+    </section>
+
+    <section anchor="terminology" title="Terminology">
+      <ul>
+        <li><strong>NKG (Network Knowledge Graph):</strong> A graph-based representation of network entities, their attributes, and their relationships.</li>
+        <li><strong>Agent:</strong> An LLM-based system that acts as a conversational interface for network operators.</li>
+        <li><strong>NL (Natural Language):</strong> Natural-language requests issued by network operators.</li>
+        <li><strong>DSL (Domain-Specific Language):</strong> A structured directive language used by applications or orchestration systems.</li>
+      </ul>
+    </section>
+
+    <section anchor="architecture-overview" title="Gateway Architecture Overview">
+      <t>This gateway architecture adopts a three-layer architecture, with the Unified Intent Gateway (UIG) serving as the central mediator between upstream requests and downstream knowledge execution:</t>
+
+      <artwork><![CDATA[
++-----------------------------------------------------------+
+|         Upstream: Input & Interaction Layer               |
+|         (Users [NL], Applications [DSL])                  |
++----------------------------^------------------------------+
+                             |
+          (1) Intent Request | (4) Final Response
+                             |
++----------------------------v------------------------------+
+|             Midstream: Unified Intent Gateway             |
+| [ Authorization | Resolution (IR) | Query  | Synthesis ]  |
++----------------------------^------------------------------+
+                             |
+          (2) Cypher Query   | (3) Structured Result
+                             |
++----------------------------v------------------------------+
+|             Downstream: Data & Knowledge Layer            |
+|  [ Authorization Check | Graph Engine | NKG Storage ]     |
++-----------------------------------------------------------+
+      ]]></artwork>
+
+      <ul>
+        <li><strong>Input and Interaction Layer (User/Application)</strong></li>
+        <li><strong>Unified Intent Gateway (UIG)</strong></li>
+        <li><strong>Data and Knowledge Layer (NKG and Graph Engine)</strong></li>
+      </ul>
+      <t><strong>Overall processing flow:</strong></t>
+      <t>Upstream input (NL/DSL) -&gt; UIG (authentication/authorization, parsing, Intermediate Representation (IR) construction, query/execution planning) -&gt; NKG execution -&gt; UIG response synthesis -&gt; upstream response delivery.</t>
+
+      <section anchor="input-layer" title="Input and Interaction Layer">
+        <t>The upstream layer accepts two categories of inputs:</t>
+        <ul>
+          <li><strong>User input (NL):</strong> e.g., "List the nodes with abnormal traffic in the last five minutes."</li>
+          <li><strong>Application input (DSL):</strong> e.g., <tt>SELECT_TRAFFIC(srcIP=10.0.0.1, window=5m)</tt>.</li>
+        </ul>
+        <t>Primary responsibilities of this layer include:</t>
+        <ul>
+          <li>Providing unified interfaces (e.g., REST, gRPC, WebSocket);</li>
+          <li>Transmitting requests with identity information and contextual metadata;</li>
+          <li>Receiving structured results (e.g., JSON) and optional natural-language explanations.</li>
+        </ul>
+      </section>
+
+      <section anchor="uig-layer" title="Unified Intent Gateway">
+        <t>The UIG receives requests, performs authentication/authorization and intent resolution, normalizes requests into an IR, and generates graph query/operation statements (e.g., Cypher). After receiving results from the NKG, the UIG aggregates and formats the structured data and returns it to upstream consumers.</t>
+
+        <artwork><![CDATA[
++-----------------------------------------------------------------------+
+|                       Unified Intent Gateway (UIG)                    |
+|                                                                       |
+|  +---------------+     +-------------------+      +----------------+  |
+|  |   Ingress     |     | Intent Resolution |      | Query Executor |  |
+|  |      &        |---->| (Agent / Parser)  |----->|       &        |  |
+|  | Authorization |     +---------+---------+      |  Synthesizer   |  |
+|  +---------------+               |                +-------+--------+  |
+|          |                (IR Generation)                 |           |
+|          |                       |                        |           |
+|          +-----------------------+------------------------+           |
+|                                  |                                    |
+|                       +----------v----------+                         |
+|                       |      Audit Log      |                         |
+|                       |  (Policy & Action)  |                         |
+|                       +---------------------+                         |
++-----------------------------------------------------------------------+
+        ]]></artwork>
+
+        <t><strong>Defense-in-depth requirement:</strong> the underlying NKG/graph engine itself MUST provide built-in security capabilities. It MUST authenticate the UIG's Query Executor and authorize operations using fine-grained policies for node/subgraph access, so that the framework does not rely on the UIG as a single point of failure.</t>
+        <t>The UIG's main functions include:</t>
+        <ol>
+          <li>
+            <t>Input parsing and intent recognition</t>
+            <ul>
+              <li>For NL: an LLM Agent performs intent extraction, semantic slot completion, and task generation. Crucially, this process is guided by a domain-specific ontology to map unstructured text to precise semantic anchors and ensure accurate intent resolution;</li>
+              <li>For DSL: a rule-based engine parses structured directives;</li>
+              <li>Both forms are normalized into a unified IR.</li>
+            </ul>
+          </li>
+          <li>
+            <t><strong>Validation and policy enforcement</strong></t>
+            <ul>
+              <li>Validate syntactic correctness and executability of commands;</li>
+              <li>Authenticate requesters and authorize operations (e.g., by role/tenant/scope);</li>
+              <li>Check consistency with the graph schema and reject illegal or unauthorized requests.</li>
+            </ul>
+          </li>
+          <li>
+            <t><strong>Statement generation and execution orchestration</strong></t>
+            <ul>
+              <li>Translate IR into standardized Cypher (or an equivalent graph query language);</li>
+              <li>Construct execution plans (read/write/multi-step);</li>
+              <li>Record audit logs (request, authorization decisions, generated statements, and result summaries).</li>
+            </ul>
+          </li>
+          <li>
+            <t><strong>Response synthesis</strong></t>
+            <ul>
+              <li>Normalize query results into structured outputs (e.g., JSON);</li>
+              <li>Optionally generate natural-language explanations for operators.</li>
+            </ul>
+          </li>
+        </ol>
+      </section>
+
+      <section anchor="data-layer" title="Data and Knowledge Layer">
+        <t>This layer consists of the NKG and the graph database/engine, and is responsible for executing graph queries/operations and returning structured results. It supports:</t>
+        <ul>
+          <li>Efficient retrieval and updates over topology, device status, telemetry-derived facts, and related knowledge;</li>
+          <li>Structured result formats (e.g., Node–Relation–Attribute).</li>
+        </ul>
+        <t><strong>Security requirement:</strong> the NKG MUST authenticate querying entities and authorize access to nodes/edges/subgraphs using fine-grained access control (e.g., restricting sensitive subgraphs based on role). This provides a foundational security safeguard for the overall gateway architecture.</t>
+      </section>
+    </section>
+
+    <section anchor="use-cases" title="Use Cases">
+      <t>This section provides illustrative use cases demonstrating how the gateway architecture supports automated and controlled NKG interactions.</t>
+
+      <section anchor="use-case-1" title="Use Case 1: HTTP Flood Investigation (NL)">
+        <t><strong>Scenario:</strong> A service reports abnormal response latency, and an operator suspects an HTTP Flood.</t>
+        <t><strong>Input (NL):</strong> "Check whether there is an HTTP Flood attack affecting the target service."</t>
+        <t><strong>Expected UIG behavior:</strong></t>
+        <ul>
+          <li>Authenticate and authorize the requester.</li>
+          <li>Resolve intent into IR (e.g., <tt>{intent: http_flood_investigation, window: 5m, target: service_X}</tt>).</li>
+          <li>Translate IR into one or more graph queries over traffic/telemetry facts.</li>
+          <li>Synthesize results into a structured response and an optional operator-facing summary.</li>
+        </ul>
+        <t><strong>Example query (Cypher):</strong></t>
+        <sourcecode type="cypher"><![CDATA[
+MATCH (src:IP)-[r:SENDS_HTTP]->(dst:Server)
+WHERE r.request_rate > $threshold AND dst.port = 80 AND r.window = "5m"
+RETURN src, r.request_rate, dst
+ORDER BY r.request_rate DESC
+        ]]></sourcecode>
+        <t><strong>Output:</strong></t>
+        <ul>
+          <li>Structured JSON containing suspected sources, request rates, and affected servers.</li>
+          <li>Optional explanation: "High-rate HTTP requests from 1.2.3.4 to server S are observed within the last 5 minutes; behavior is consistent with an HTTP Flood."</li>
+        </ul>
+      </section>
+
+      <section anchor="use-case-2" title="Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)">
+        <t><strong>Scenario:</strong> A network administrator dynamically maintains the NKG by creating, updating, or deleting graph nodes (e.g., device nodes, service nodes, or asset entries). All write operations MUST be strictly controlled by role-based authorization and fully audited.</t>
+        <t><strong>Input (DSL examples):</strong></t>
+        <ul>
+          <li><tt>UPSERT_NODE(type="Device", key="name", value="FW1", props={interface:"eth0", status:"active"})</tt></li>
+          <li><tt>DELETE_NODE(type="Device", key="name", value="FW1")</tt></li>
+        </ul>
+        <t><strong>Expected UIG behavior:</strong></t>
+        <ul>
+          <li>Enforce elevated privileges for write operations (administrator-only).</li>
+          <li>Parse DSL into IR (e.g., <tt>{op: upsert_node, type: Device, match_key: name, match_value: FW1, props: {...}}</tt>).</li>
+          <li>Validate schema constraints (node label, required properties, property types) and policy constraints (tenant boundary, write scope).</li>
+          <li>Generate graph write statements and record an audit trail (request, auth decision, generated statements, and result summary).</li>
+        </ul>
+        <t><strong>Example operations (Cypher):</strong></t>
+        <sourcecode type="cypher"><![CDATA[
+MERGE (n:Device {name:"FW1"})
+SET n.interface="eth0",
+    n.status="active";
+
+MATCH (n:Device {name:"FW1"})
+DELETE n;
+        ]]></sourcecode>
+        <t><strong>Output:</strong></t>
+        <ul>
+          <li>Structured JSON acknowledgment containing operation status (success/failure), affected node identifiers, and an audit reference.</li>
+          <li>Example: <tt>{"status": "success", "operation": "upsert_node", "affected_nodes": ["FW1"], "audit_reference": {"trace_id": "req-9a8b7c6d"}}</tt></li>
+        </ul>
+      </section>
+    </section>
+
+    <section anchor="security" title="Security Considerations">
+      <t>This document describes an interaction gateway for a NKG mediated by a UIG. Implementations MUST consider the following:</t>
+      <ul>
+        <li>The graph engine/NKG service MUST enforce authentication and fine-grained authorization for all operations initiated by the UIG (defense-in-depth), so the UIG is not a single point of failure.</li>
+        <li>NL/DSL inputs MUST be validated and constrained to prevent malformed or unauthorized graph operations.</li>
+        <li>Write operations (create/update/delete) MUST be restricted to explicitly authorized roles and scopes, and SHOULD be fully audited.</li>
+        <li>Responses MUST be filtered/redacted according to the requester's authorization scope to avoid data leakage.</li>
+      </ul>
+    </section>
+
+    <section anchor="iana" title="IANA Considerations">
+      <t>This document has no IANA actions.</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Informative References">
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.mackey-nmop-kg-for-netops.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.marcas-nmop-knowledge-graph-yang.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.pang-nmop-kg-for-traffic-monitoring-analysis.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.tailhardat-nmop-incident-management-noria.xml"/>
+    </references>
+  </back>
+</rfc>
