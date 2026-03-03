@@ -7,8 +7,8 @@ submissiontype: IETF
 ipr: trust200902
 date: 2026-02-27
 v: 3
-area: "OPS"
-workgroup: "NMOP"
+# area: "OPS"
+# workgroup: "NMOP"
 author:
   - ins: "Y. Cui"
     name: "Yong Cui"
