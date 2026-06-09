@@ -403,9 +403,9 @@ Table of Contents
               Mackey, M., Claise, B., Graf, T., Keller, H., Voyer, D.,
               Lucente, P., and I. D. Martinez-Casanueva, "Knowledge
               Graph Framework for Network Operations", Work in Progress,
-              Internet-Draft, draft-mackey-nmop-kg-for-netops-03, 2
-              September 2025, <https://datatracker.ietf.org/doc/html/
-              draft-mackey-nmop-kg-for-netops-03>.
+              Internet-Draft, draft-mackey-nmop-kg-for-netops-04, 7
+              April 2026, <https://datatracker.ietf.org/doc/html/draft-
+              mackey-nmop-kg-for-netops-04>.
 
    [I-D.marcas-nmop-knowledge-graph-yang]
               Martinez-Casanueva, I. D., Rodríguez, L. C., and P.
