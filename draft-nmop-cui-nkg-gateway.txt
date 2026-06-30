@@ -5,11 +5,11 @@
 Network Working Group                                             Y. Cui
 Internet-Draft                                       Tsinghua University
 Intended status: Informational                                    J. Niu
-Expires: 28 November 2026Beijing University of Posts and Telecommunications
+Expires: 2 January 2027Beijing University of Posts and Telecommunications
                                                                  M. Xing
                                                                 L. Zhang
                                                  Zhongguancun Laboratory
-                                                             27 May 2026
+                                                             1 July 2026
 
 
             A Gateway for Network Knowledge Graph Management
@@ -53,7 +53,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 November 2026.
+   This Internet-Draft will expire on 2 January 2027.
 
 Copyright Notice
 
