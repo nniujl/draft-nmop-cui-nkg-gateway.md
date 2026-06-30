@@ -5,8 +5,8 @@ docname: draft-nmop-cui-nkg-gateway-latest
 category: info
 submissiontype: IETF
 ipr: trust200902
-date: 2026-05-27
-v: 2
+date: 2026-07-01
+v: 3
 # area: "OPS"
 # workgroup: "NMOP"
 author:
