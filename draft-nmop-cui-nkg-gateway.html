@@ -6,24 +6,28 @@
 <meta content="initial-scale=1.0" name="viewport">
 <title>A Gateway for Network Knowledge Graph Management</title>
 <meta content="Yong Cui" name="author">
+<meta content="Jialin Niu" name="author">
+<meta content="Mingzhe Xing" name="author">
+<meta content="Lei Zhang" name="author">
 <meta content="
        This document specifies an interaction gateway for Network Knowledge Graphs (NKGs) to simplify graph-based network operations. The gateway architecture defines a Unified Intent Gateway (UIG) that supports Natural Language (NL) requests from human operators and Domain-Specific Language (DSL) or API directives from applications and orchestration systems. The UIG interprets user expectations and application directives as structured intents, aligns them with the NKG structure and exposed capabilities, and maps them to graph queries, graph inferences, API calls, or operational workflows through an Intermediate Representation (IR). The gateway architecture incorporates intent discovery, capability mapping, policy enforcement, audit logging, and response synthesis to make NKG-based operations more accessible, secure, and controllable. 
     " name="description">
-<meta content="xml2rfc 3.33.0" name="generator">
+<meta content="xml2rfc 3.34.0" name="generator">
 <meta content="draft-nmop-cui-nkg-gateway-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.33.0
-    Python 3.12.13
-    ConfigArgParse 1.7
+  xml2rfc 3.34.0
+    Python 3.14.5
+    ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 6.0.2
-    platformdirs 4.9.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.10.0
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.7.0
+    wcwidth 0.8.1
 -->
 <link href="draft-nmop-cui-nkg-gateway.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1045,7 +1049,7 @@ svg {
 <td class="right">May 2026</td>
 </tr></thead>
 <tfoot><tr>
-<td class="left">Cui</td>
+<td class="left">Cui, et al.</td>
 <td class="center">Expires 28 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
@@ -1065,11 +1069,23 @@ svg {
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
 <dd class="expires"><time datetime="2026-11-28">28 November 2026</time></dd>
-<dt class="label-authors">Author:</dt>
+<dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
       <div class="author-name">Y. Cui</div>
 <div class="org">Tsinghua University</div>
+</div>
+<div class="author">
+      <div class="author-name">J. Niu</div>
+<div class="org">Beijing University of Posts and Telecommunications</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Xing</div>
+<div class="org">Zhongguancun Laboratory</div>
+</div>
+<div class="author">
+      <div class="author-name">L. Zhang</div>
+<div class="org">Zhongguancun Laboratory</div>
 </div>
 </dd>
 </dl>
@@ -1187,7 +1203,7 @@ svg {
             <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
-            <p id="section-toc.1-1.8.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+            <p id="section-toc.1-1.8.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1766,8 +1782,8 @@ DELETE n;
 </div>
 <div id="authors-addresses">
 <section id="appendix-A">
-      <h2 id="name-authors-address">
-<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
       </h2>
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Yong Cui</span></div>
@@ -1775,6 +1791,39 @@ DELETE n;
 <div class="email">
 <span>Email:</span>
 <a href="mailto:cuiyong@tsinghua.edu.cn" class="email">cuiyong@tsinghua.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Jialin Niu</span></div>
+<div dir="auto" class="left"><span class="org">Beijing University of Posts and Telecommunications</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100876</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:njl@bupt.edu.cn" class="email">njl@bupt.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Mingzhe Xing</span></div>
+<div dir="auto" class="left"><span class="org">Zhongguancun Laboratory</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100094</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:xingmz@zgclab.edu.cn" class="email">xingmz@zgclab.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Lei Zhang</span></div>
+<div dir="auto" class="left"><span class="org">Zhongguancun Laboratory</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100094</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:zhanglei@zgclab.edu.cn" class="email">zhanglei@zgclab.edu.cn</a>
 </div>
 </address>
 </section>

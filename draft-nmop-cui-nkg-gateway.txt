@@ -4,8 +4,12 @@
 
 Network Working Group                                             Y. Cui
 Internet-Draft                                       Tsinghua University
-Intended status: Informational                               27 May 2026
-Expires: 28 November 2026
+Intended status: Informational                                    J. Niu
+Expires: 28 November 2026Beijing University of Posts and Telecommunications
+                                                                 M. Xing
+                                                                L. Zhang
+                                                 Zhongguancun Laboratory
+                                                             27 May 2026
 
 
             A Gateway for Network Knowledge Graph Management
@@ -83,7 +87,7 @@ Table of Contents
    5.  Security Considerations
    6.  IANA Considerations
    7.  Informative References
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
@@ -667,8 +671,32 @@ ORDER BY r.request_rate DESC
               <https://datatracker.ietf.org/doc/html/draft-tailhardat-
               nmop-incident-management-noria-04>.
 
-Author's Address
+Authors' Addresses
 
    Yong Cui
    Tsinghua University
    Email: cuiyong@tsinghua.edu.cn
+
+
+   Jialin Niu
+   Beijing University of Posts and Telecommunications
+   Beijing
+   100876
+   China
+   Email: njl@bupt.edu.cn
+
+
+   Mingzhe Xing
+   Zhongguancun Laboratory
+   Beijing
+   100094
+   China
+   Email: xingmz@zgclab.edu.cn
+
+
+   Lei Zhang
+   Zhongguancun Laboratory
+   Beijing
+   100094
+   China
+   Email: zhanglei@zgclab.edu.cn
