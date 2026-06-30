@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>A Gateway for Network Knowledge Graph Management</title>
+<meta content="Yong Cui" name="author">
+<meta content="Jialin Niu" name="author">
+<meta content="Mingzhe Xing" name="author">
+<meta content="Lei Zhang" name="author">
+<meta content="
+       This document specifies an interaction gateway for Network Knowledge Graphs (NKGs) to simplify graph-based network operations. The gateway architecture defines a Unified Intent Gateway (UIG) that supports Natural Language (NL) requests from human operators and Domain-Specific Language (DSL) or API directives from applications and orchestration systems. The UIG interprets user expectations and application directives as structured intents, aligns them with the NKG structure and exposed capabilities, and maps them to graph queries, graph inferences, API calls, or operational workflows through an Intermediate Representation (IR). The gateway architecture incorporates intent discovery, capability mapping, policy enforcement, audit logging, and response synthesis to make NKG-based operations more accessible, secure, and controllable. 
+    " name="description">
+<meta content="xml2rfc 3.34.0" name="generator">
+<meta content="draft-nmop-cui-nkg-gateway-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.0
+    Python 3.14.5
+    ConfigArgParse 1.7.5
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.10.0
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.8.1
+-->
+<link href="draft-nmop-cui-nkg-gateway.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">NKG Gateway</td>
+<td class="right">July 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Cui, et al.</td>
+<td class="center">Expires 2 January 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Network Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-nmop-cui-nkg-gateway-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-07-01" class="published">1 July 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-01-02">2 January 2027</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">Y. Cui</div>
+<div class="org">Tsinghua University</div>
+</div>
+<div class="author">
+      <div class="author-name">J. Niu</div>
+<div class="org">Beijing University of Posts and Telecommunications</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Xing</div>
+<div class="org">Zhongguancun Laboratory</div>
+</div>
+<div class="author">
+      <div class="author-name">L. Zhang</div>
+<div class="org">Zhongguancun Laboratory</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">A Gateway for Network Knowledge Graph Management</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document specifies an interaction gateway for Network Knowledge Graphs (NKGs) to simplify graph-based network operations. The gateway architecture defines a Unified Intent Gateway (UIG) that supports Natural Language (NL) requests from human operators and Domain-Specific Language (DSL) or API directives from applications and orchestration systems. The UIG interprets user expectations and application directives as structured intents, aligns them with the NKG structure and exposed capabilities, and maps them to graph queries, graph inferences, API calls, or operational workflows through an Intermediate Representation (IR). The gateway architecture incorporates intent discovery, capability mapping, policy enforcement, audit logging, and response synthesis to make NKG-based operations more accessible, secure, and controllable.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-discussion-venues">
+<a href="#name-discussion-venues" class="section-name selfRef">Discussion Venues</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">Source for this draft and an issue tracker can be found at
+    <span><a href="https://github.com/nniujl/draft-nmop-cui-nkg-gateway.md">https://github.com/nniujl/draft-nmop-cui-nkg-gateway.md</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 2 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-motivation" class="internal xref">Motivation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-problem-statement" class="internal xref">Problem Statement</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-gateway-architecture-overvi" class="internal xref">Gateway Architecture Overview</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-input-and-interaction-layer" class="internal xref">Input and Interaction Layer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-unified-intent-gateway" class="internal xref">Unified Intent Gateway</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-data-and-knowledge-layer" class="internal xref">Data and Knowledge Layer</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-use-cases" class="internal xref">Use Cases</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-use-case-1-http-flood-inves" class="internal xref">Use Case 1: HTTP Flood Investigation (NL)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-use-case-2-admin-controlled" class="internal xref">Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-use-case-3-intent-discovery" class="internal xref">Use Case 3: Intent Discovery for Network Troubleshooting (NL)</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<div id="motivation">
+<section id="section-1.1">
+        <h3 id="name-motivation">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-motivation" class="section-name selfRef">Motivation</a>
+        </h3>
+<p id="section-1.1-1">Network Knowledge Graphs (NKGs) provide a unified, associative, and semantic representation of network states and structures, supporting observability, automated operations, and intelligent management. Existing NKG systems can expose structured query, graph traversal, reasoning, validation, and data integration capabilities. In current operational scenarios, however, these capabilities are usually accessed through graph schemas, query languages (e.g., Cypher or SPARQL), or tool-specific APIs, which introduces the following challenges:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-2.1">
+            <p id="section-1.1-2.1.1"><strong>High Usage Barrier:</strong> Operators and applications often need to understand the underlying graph schema, entity types, relationship definitions, and query language syntax before they can effectively use NKG capabilities.<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.2">
+            <p id="section-1.1-2.2.1"><strong>Lack of Intent Abstraction:</strong> Operators usually express desired operational outcomes in natural language, such as investigating a service degradation, identifying affected resources, or finding mitigation candidates. Such user expectations need to be interpreted, refined, and aligned with the NKG structure before they can become executable graph-based operations.<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-1.1-3">Therefore, a unified and secure intent-aware gateway tailored for NKG operations is required. The gateway should reduce the usage barrier for operators, abstract user expectations and application directives into structured intents, and map these intents to supported NKG capabilities in a controllable and auditable manner.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="problem-statement">
+<section id="section-1.2">
+        <h3 id="name-problem-statement">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-problem-statement" class="section-name selfRef">Problem Statement</a>
+        </h3>
+<p id="section-1.2-1">The central challenge is the absence of an intelligent gateway capable of translating high-level user expectations or structured application directives into validated NKG operations, while preserving security, policy control, and operational traceability. Such a gateway needs to bridge the gap between human- or application-level requests and the graph-level capabilities exposed by NKG systems.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-2">An intent-aware gateway for NKG management needs to satisfy the following requirements:<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-3.1">
+            <p id="section-1.2-3.1.1"><strong>Unified Heterogeneous Input:</strong> The gateway should consolidate natural-language requests from human operators and structured directives from applications, controllers, or orchestration systems.<a href="#section-1.2-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.2">
+            <p id="section-1.2-3.2.1"><strong>Intent Discovery and Interpretation:</strong> The gateway should expose supported intent types according to the NKG structure and capability metadata, and should infer candidate intents from incomplete or ambiguous user expectations.<a href="#section-1.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.3">
+            <p id="section-1.2-3.3.1"><strong>Intent Representation:</strong> The gateway should normalize interpreted intents into an IR that captures the intent type, target scope, constraints, context, required capabilities, authorization context, and output preference.<a href="#section-1.2-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.4">
+            <p id="section-1.2-3.4.1"><strong>Schema-aware Capability Mapping:</strong> The gateway should map intents to graph queries, graph inferences, API calls, or workflows according to the current NKG schema, relationship definitions, and exposed capabilities.<a href="#section-1.2-3.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.5">
+            <p id="section-1.2-3.5.1"><strong>Multi-step Execution Planning:</strong> The gateway should support intents that require multiple graph queries, reasoning steps, validation checks, or external API calls.<a href="#section-1.2-3.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.6">
+            <p id="section-1.2-3.6.1"><strong>Intent and Operation Validation:</strong> The gateway should validate the IR and generated operations before execution, including schema constraints, policy constraints, authorization scope, and semantic consistency.<a href="#section-1.2-3.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.7">
+            <p id="section-1.2-3.7.1"><strong>Security and Compliance:</strong> The gateway should ensure rigorous authentication, authorization, policy enforcement, output filtering, and audit logging. The underlying NKG and graph engine should also enforce access control for defense in depth.<a href="#section-1.2-3.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-3.8">
+            <p id="section-1.2-3.8.1"><strong>Response Synthesis:</strong> The gateway should synthesize execution results into machine-consumable structured outputs and, when requested, operator-facing natural-language summaries or explanations.<a href="#section-1.2-3.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="terminology">
+<section id="section-2">
+      <h2 id="name-terminology">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+      </h2>
+<ul class="normal">
+<li class="normal" id="section-2-1.1">
+          <p id="section-2-1.1.1"><strong>NKG (Network Knowledge Graph):</strong> A graph-based representation of network entities, their attributes, operational states, and semantic relationships.<a href="#section-2-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.2">
+          <p id="section-2-1.2.1"><strong>User Expectation:</strong> An operator-level expression of a desired operational outcome. It is typically conveyed via Natural Language (NL) and may be incomplete, ambiguous, or independent of the underlying NKG schema.<a href="#section-2-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.3">
+          <p id="section-2-1.3.1"><strong>Application Directive:</strong> A structured request issued by an application, controller, orchestration system, or automation tool. It may be encoded using a Domain-Specific Language (DSL), an API request, or another machine-readable format.<a href="#section-2-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.4">
+          <p id="section-2-1.4.1"><strong>Intent:</strong> A structured representation of a user expectation or application directive after interpretation, clarification, and alignment with the NKG structure and available capabilities.<a href="#section-2-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.5">
+          <p id="section-2-1.5.1"><strong>Intent Catalog:</strong> A registry of supported intent types and related metadata exposed by the UIG. It describes the capabilities exposed through the UIG, including supported operational intents, required parameters, mapped NKG capabilities, and supported output formats.<a href="#section-2-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.6">
+          <p id="section-2-1.6.1"><strong>IR (Intermediate Representation):</strong> A normalized and instantiated representation of a specific intent before execution. While the Intent Catalog describes what the UIG can support, the IR captures what the current request intends to do, including the intent type, targets, constraints, context, required capabilities, authorization context, and execution preferences.<a href="#section-2-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.7">
+          <p id="section-2-1.7.1"><strong>NKG Capability:</strong> A query, inference, validation, update, or external operation that can be invoked over or through the NKG and its associated graph engine or management APIs.<a href="#section-2-1.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.8">
+          <p id="section-2-1.8.1"><strong>Agent:</strong> An optional LLM-based or rule-assisted component within the UIG that helps parse user expectations, infer intents, complete missing slots, or generate operator-facing explanations.<a href="#section-2-1.8.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="gateway-architecture-overview">
+<section id="section-3">
+      <h2 id="name-gateway-architecture-overvi">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-gateway-architecture-overvi" class="section-name selfRef">Gateway Architecture Overview</a>
+      </h2>
+<p id="section-3-1">This gateway architecture adopts a three-layer architecture, with the Unified Intent Gateway (UIG) serving as the central mediator between upstream requests and downstream NKG capabilities. In this architecture, the gateway is an intent-aware interaction component that connects operators and applications with graph-based knowledge operations.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3-2">
+<pre>
++-----------------------------------------------------------+
+|         Upstream: Input &amp; Interaction Layer               |
+|         (Users [NL], Applications [DSL/API])              |
++----------------------------^------------------------------+
+                             |
+          (1) User Expectation or Directive
+                             |
+                             | (5) Final Response
+                             |     (Structured Result / Summary)
++----------------------------v------------------------------+
+|             Midstream: Unified Intent Gateway             |
+| [ Authorization | Intent Catalog | Resolution (IR) |      |
+|   Query/Plan | Policy | Synthesis ]                       |
++----------------------------^------------------------------+
+                             |
+          (2) Capability Request / Query / Workflow
+                             |
+                             | (4) Execution Result
++----------------------------v------------------------------+
+|             Downstream: Data &amp; Knowledge Layer            |
+| [ NKG Schema | Graph Engine | Reasoning | APIs | Policies]|
++-----------------------------------------------------------+
+</pre><a href="#section-3-2" class="pilcrow">¶</a>
+</div>
+<ul class="normal">
+<li class="normal" id="section-3-3.1">
+          <p id="section-3-3.1.1"><strong>Input and Interaction Layer (User/Application)</strong><a href="#section-3-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-3.2">
+          <p id="section-3-3.2.1"><strong>Unified Intent Gateway (UIG)</strong><a href="#section-3-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-3.3">
+          <p id="section-3-3.3.1"><strong>Data and Knowledge Layer (NKG, Graph Engine, and Related Capabilities)</strong><a href="#section-3-3.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-3-4"><strong>Overall processing flow:</strong><a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Upstream input (NL/DSL) -&gt; UIG (authentication/authorization, intent catalog lookup, intent resolution, Intermediate Representation (IR) construction and validation, capability mapping, query/execution planning) -&gt; NKG execution -&gt; UIG response synthesis -&gt; upstream response delivery.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<div id="input-and-interaction-layer">
+<section id="section-3.1">
+        <h3 id="name-input-and-interaction-layer">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-input-and-interaction-layer" class="section-name selfRef">Input and Interaction Layer</a>
+        </h3>
+<p id="section-3.1-1">The upstream layer accepts inputs from human operators and automated systems:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-2.1">
+            <p id="section-3.1-2.1.1"><strong>User input (NL):</strong> e.g., "Check whether service_X is affected by an HTTP Flood."<a href="#section-3.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.2">
+            <p id="section-3.1-2.2.1"><strong>Application input (DSL/API):</strong> e.g., <code>INVESTIGATE_INCIDENT(target="service_X", window="5m")</code>.<a href="#section-3.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.3">
+            <p id="section-3.1-2.3.1"><strong>Contextual metadata:</strong> e.g., requester identity, tenant, target domain, time window, ticket identifier, or operational scope.<a href="#section-3.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.1-3">Primary responsibilities of this layer include:<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-4.1">
+            <p id="section-3.1-4.1.1">Providing unified interfaces (e.g., REST, gRPC, WebSocket, command-line interfaces, or conversational interfaces);<a href="#section-3.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-4.2">
+            <p id="section-3.1-4.2.1">Transmitting requests with identity information, authorization context, and operational metadata;<a href="#section-3.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-4.3">
+            <p id="section-3.1-4.3.1">Receiving structured results (e.g., JSON), graph paths or subgraphs, audit references, and optional natural-language explanations.<a href="#section-3.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="unified-intent-gateway">
+<section id="section-3.2">
+        <h3 id="name-unified-intent-gateway">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-unified-intent-gateway" class="section-name selfRef">Unified Intent Gateway</a>
+        </h3>
+<p id="section-3.2-1">The UIG receives requests, performs authentication/authorization, consults the Intent Catalog to identify supported intent types, resolves the request into an intent, normalizes the resolved intent into an IR, and maps the IR to graph queries, graph inferences, API calls, or execution plans. After receiving results from the NKG or related management systems, the UIG aggregates the returned data and synthesizes responses for upstream consumers.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.2-2">
+<pre>
++-----------------------------------------------------------------------+
+|                       Unified Intent Gateway (UIG)                    |
+|                                                                       |
+|  +---------------+     +-------------------+      +----------------+  |
+|  |   Ingress     |     | Intent Catalog &amp;  |      | IR Generation  |  |
+|  |      &amp;        |----&gt;| Intent Resolution |-----&gt;| &amp; Validation   |  |
+|  | Authorization |     +---------+---------+      +-------+--------+  |
+|  +---------------+               |                        |           |
+|                                  |                        v           |
+|                         +--------v---------+      +----------------+  |
+|                         | Capability       |-----&gt;| Query/Plan     |  |
+|                         | Mapping          |      | Executor       |  |
+|                         +--------+---------+      +-------+--------+  |
+|                                  |                        |           |
+|                                  v                        v           |
+|                         +----------------+      +------------------+  |
+|                         | Policy         |&lt;----&gt;| Response         |  |
+|                         | Enforcement    |      | Synthesis &amp; Log  |  |
+|                         +----------------+      +------------------+  |
++-----------------------------------------------------------------------+
+</pre><a href="#section-3.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-3.2-3"><strong>Defense-in-depth requirement:</strong> the underlying NKG/graph engine itself MUST provide built-in security capabilities. It MUST authenticate the UIG's Query Executor and authorize operations using fine-grained policies for node, edge, subgraph, capability, and tenant access, so that the architecture does not rely on the UIG as a single point of failure.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+<p id="section-3.2-4">The UIG's main functions include:<a href="#section-3.2-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3.2-5">
+<li id="section-3.2-5.1">
+            <p id="section-3.2-5.1.1"><strong>Input parsing and intent recognition</strong><a href="#section-3.2-5.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.2-5.1.2.1">
+                <p id="section-3.2-5.1.2.1.1">For NL: an Agent MAY perform intent extraction, semantic slot completion, clarification, and task generation. This process can be guided by domain-specific ontology, intent catalog entries, and NKG capability metadata;<a href="#section-3.2-5.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.1.2.2">
+                <p id="section-3.2-5.1.2.2.1">For DSL/API directives: a rule-based parser or structured validator parses machine-readable requests;<a href="#section-3.2-5.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.1.2.3">
+                <p id="section-3.2-5.1.2.3.1">Both forms are normalized into a unified IR.<a href="#section-3.2-5.1.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li id="section-3.2-5.2">
+            <p id="section-3.2-5.2.1"><strong>Intent discovery and catalog support</strong><a href="#section-3.2-5.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.2-5.2.2.1">
+                <p id="section-3.2-5.2.2.1.1">Expose available intent types according to NKG schema, capability metadata, requester role, tenant, and operational scope;<a href="#section-3.2-5.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.2.2.2">
+                <p id="section-3.2-5.2.2.2.1">Provide required parameters, optional parameters, and supported output formats for each intent type;<a href="#section-3.2-5.2.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.2.2.3">
+                <p id="section-3.2-5.2.2.3.1">Support user interaction when an operator needs to discover what NKG-based operations are available.<a href="#section-3.2-5.2.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li id="section-3.2-5.3">
+            <p id="section-3.2-5.3.1"><strong>Validation and policy enforcement</strong><a href="#section-3.2-5.3.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.2-5.3.2.1">
+                <p id="section-3.2-5.3.2.1.1">Validate syntactic correctness, required fields, and executability of the IR;<a href="#section-3.2-5.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.3.2.2">
+                <p id="section-3.2-5.3.2.2.1">Authenticate requesters and authorize operations (e.g., by role/tenant/scope);<a href="#section-3.2-5.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.3.2.3">
+                <p id="section-3.2-5.3.2.3.1">Check consistency with the NKG schema, capability metadata, and policy constraints;<a href="#section-3.2-5.3.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.3.2.4">
+                <p id="section-3.2-5.3.2.4.1">Reject ambiguous, unsupported, or unauthorized requests before execution.<a href="#section-3.2-5.3.2.4.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li id="section-3.2-5.4">
+            <p id="section-3.2-5.4.1"><strong>Statement generation and execution orchestration</strong><a href="#section-3.2-5.4.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.2-5.4.2.1">
+                <p id="section-3.2-5.4.2.1.1">Translate IR into standardized Cypher, SPARQL, or equivalent graph query statements when graph queries are required;<a href="#section-3.2-5.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.4.2.2">
+                <p id="section-3.2-5.4.2.2.1">Construct execution plans for graph inference, external API calls, or multi-step workflows;<a href="#section-3.2-5.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.4.2.3">
+                <p id="section-3.2-5.4.2.3.1">Record audit logs covering the request, authorization decisions, generated operations, execution plan, and result summaries.<a href="#section-3.2-5.4.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li id="section-3.2-5.5">
+            <p id="section-3.2-5.5.1"><strong>Response synthesis</strong><a href="#section-3.2-5.5.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.2-5.5.2.1">
+                <p id="section-3.2-5.5.2.1.1">Normalize query and execution results into structured outputs (e.g., JSON);<a href="#section-3.2-5.5.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.5.2.2">
+                <p id="section-3.2-5.5.2.2.1">Return graph paths, affected entities, evidence chains, confidence values, or audit references when applicable;<a href="#section-3.2-5.5.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-3.2-5.5.2.3">
+                <p id="section-3.2-5.5.2.3.1">Optionally generate natural-language summaries or explanations for operators.<a href="#section-3.2-5.5.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+        </ol>
+</section>
+</div>
+<div id="data-and-knowledge-layer">
+<section id="section-3.3">
+        <h3 id="name-data-and-knowledge-layer">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-data-and-knowledge-layer" class="section-name selfRef">Data and Knowledge Layer</a>
+        </h3>
+<p id="section-3.3-1">This layer consists of the NKG, graph database/engine, reasoning functions, policy metadata, and optional external management APIs. It is responsible for executing graph queries, graph inferences, graph updates, and related operations, and returning execution results to the UIG.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">It supports:<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.3-3.1">
+            <p id="section-3.3-3.1.1">Efficient retrieval and updates over topology, device status, telemetry-derived facts, service dependencies, and related knowledge;<a href="#section-3.3-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-3.2">
+            <p id="section-3.3-3.2.1">Graph traversal, causal path extraction, and reasoning over network entities and relationships;<a href="#section-3.3-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-3.3">
+            <p id="section-3.3-3.3.1">Constraint checking and semantic validation based on schema or policy metadata;<a href="#section-3.3-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-3.4">
+            <p id="section-3.3-3.4.1">Structured result formats (e.g., Node-Relation-Attribute, graph paths, or JSON objects);<a href="#section-3.3-3.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.3-3.5">
+            <p id="section-3.3-3.5.1">Invocation of external management APIs or workflow systems associated with NKG entities, when explicitly authorized.<a href="#section-3.3-3.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.3-4"><strong>Security requirement:</strong> the NKG MUST authenticate querying entities and authorize access to nodes/edges/subgraphs, capabilities, and tenants using fine-grained access control. This provides a foundational security safeguard for the overall gateway architecture.<a href="#section-3.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="use-cases">
+<section id="section-4">
+      <h2 id="name-use-cases">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-use-cases" class="section-name selfRef">Use Cases</a>
+      </h2>
+<p id="section-4-1">This section provides illustrative use cases demonstrating how the gateway architecture supports automated and controlled NKG interactions.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="use-case-1-http-flood-investigation-nl">
+<section id="section-4.1">
+        <h3 id="name-use-case-1-http-flood-inves">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-use-case-1-http-flood-inves" class="section-name selfRef">Use Case 1: HTTP Flood Investigation (NL)</a>
+        </h3>
+<p id="section-4.1-1"><strong>Scenario:</strong> A service reports abnormal response latency, and an operator suspects an HTTP Flood.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2"><strong>User expectation (NL):</strong> "Check whether there is an HTTP Flood attack affecting service_X."<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-3"><strong>Expected UIG behavior:</strong><a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.1-4.1">
+            <p id="section-4.1-4.1.1">Authenticate and authorize the requester;<a href="#section-4.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.2">
+            <p id="section-4.1-4.2.1">Infer an <code>incident_investigation</code> intent with <code>suspected_attack</code> set to <code>HTTP_Flood</code>;<a href="#section-4.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.3">
+            <p id="section-4.1-4.3.1">Clarify or assign a time window if the request does not provide one;<a href="#section-4.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.4">
+            <p id="section-4.1-4.4.1">Resolve the intent into IR, including target service, suspected attack, time window, required capabilities, and output preference;<a href="#section-4.1-4.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.5">
+            <p id="section-4.1-4.5.1">Map the IR to NKG capabilities for traffic fact retrieval, request-rate anomaly checking, and affected service lookup;<a href="#section-4.1-4.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.6">
+            <p id="section-4.1-4.6.1">Generate graph queries or execution plans over traffic/telemetry facts;<a href="#section-4.1-4.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-4.7">
+            <p id="section-4.1-4.7.1">Synthesize results into structured output and, when requested, an operator-facing explanation.<a href="#section-4.1-4.7.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.1-5"><strong>Example IR:</strong><a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.1-6">
+<pre>
+{
+  "intent": "incident_investigation",
+  "target": "service_X",
+  "suspected_attack": "HTTP_Flood",
+  "time_window": "5m",
+  "required_capabilities": [
+    "traffic_fact_retrieval",
+    "request_rate_anomaly_check",
+    "affected_service_lookup"
+  ],
+  "output_preference": [
+    "structured_json",
+    "operator_summary"
+  ]
+}
+</pre><a href="#section-4.1-6" class="pilcrow">¶</a>
+</div>
+<p id="section-4.1-7"><strong>Illustrative query (Cypher):</strong><a href="#section-4.1-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.1-8">
+<pre>
+MATCH (src:IP)-[r:SENDS_HTTP]-&gt;(dst:Server)
+WHERE r.request_rate &gt; $threshold AND dst.name = "service_X" AND r.window = "5m"
+RETURN src, r.request_rate, dst
+ORDER BY r.request_rate DESC
+</pre><a href="#section-4.1-8" class="pilcrow">¶</a>
+</div>
+<p id="section-4.1-9"><strong>Output:</strong><a href="#section-4.1-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.1-10.1">
+            <p id="section-4.1-10.1.1">Structured JSON containing suspected sources, request rates, affected services, and evidence paths;<a href="#section-4.1-10.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-10.2">
+            <p id="section-4.1-10.2.1">Optional explanation: "High-rate HTTP requests from suspicious source nodes to service_X are observed within the last five minutes; the evidence path is consistent with an HTTP Flood affecting the target service."<a href="#section-4.1-10.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="use-case-2-admin-controlled-nkg-node-maintenance-dsl">
+<section id="section-4.2">
+        <h3 id="name-use-case-2-admin-controlled">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-use-case-2-admin-controlled" class="section-name selfRef">Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)</a>
+        </h3>
+<p id="section-4.2-1"><strong>Scenario:</strong> A network administrator or authorized inventory system dynamically maintains the NKG by creating, updating, or deleting graph nodes (e.g., device nodes, service nodes, or asset entries). All write operations MUST be strictly controlled by role-based authorization and fully audited.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2"><strong>Input (DSL examples):</strong><a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2-3.1">
+            <p id="section-4.2-3.1.1"><code>UPSERT_NODE(type="Device", key="name", value="FW1", props={interface:"eth0", status:"active"})</code><a href="#section-4.2-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-3.2">
+            <p id="section-4.2-3.2.1"><code>DELETE_NODE(type="Device", key="name", value="FW1")</code><a href="#section-4.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.2-4"><strong>Expected UIG behavior:</strong><a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2-5.1">
+            <p id="section-4.2-5.1.1">Enforce elevated privileges for write operations;<a href="#section-4.2-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-5.2">
+            <p id="section-4.2-5.2.1">Parse the DSL directive into IR (e.g., <code>{op: upsert_node, type: Device, match_key: name, match_value: FW1, props: {...}}</code>);<a href="#section-4.2-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-5.3">
+            <p id="section-4.2-5.3.1">Validate schema constraints, node labels, required properties, property types, tenant boundaries, and write scope;<a href="#section-4.2-5.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-5.4">
+            <p id="section-4.2-5.4.1">Map the IR to an authorized graph update capability;<a href="#section-4.2-5.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-5.5">
+            <p id="section-4.2-5.5.1">Generate graph write statements or invoke an authorized update API;<a href="#section-4.2-5.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-5.6">
+            <p id="section-4.2-5.6.1">Record an audit trail covering the request, authorization decision, generated operation, affected node identifiers, and result summary.<a href="#section-4.2-5.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.2-6"><strong>Example operations (Cypher):</strong><a href="#section-4.2-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.2-7">
+<pre>
+MERGE (n:Device {name:"FW1"})
+SET n.interface="eth0",
+    n.status="active";
+</pre><a href="#section-4.2-7" class="pilcrow">¶</a>
+</div>
+<div class="alignLeft art-text artwork" id="section-4.2-8">
+<pre>
+MATCH (n:Device {name:"FW1"})
+DELETE n;
+</pre><a href="#section-4.2-8" class="pilcrow">¶</a>
+</div>
+<p id="section-4.2-9"><strong>Output:</strong><a href="#section-4.2-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2-10.1">
+            <p id="section-4.2-10.1.1">Structured JSON acknowledgment containing operation status (success/failure), affected node identifiers, and an audit reference.<a href="#section-4.2-10.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.2-10.2">
+            <p id="section-4.2-10.2.1">Example: <code>{"status": "success", "operation": "upsert_node", "affected_nodes": ["FW1"], "audit_reference": {"trace_id": "req-9a8b7c6d"}}</code><a href="#section-4.2-10.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="use-case-3-intent-discovery-for-network-troubleshooting-nl">
+<section id="section-4.3">
+        <h3 id="name-use-case-3-intent-discovery">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-use-case-3-intent-discovery" class="section-name selfRef">Use Case 3: Intent Discovery for Network Troubleshooting (NL)</a>
+        </h3>
+<p id="section-4.3-1"><strong>Scenario:</strong> An operator observes that a service has degraded latency, but does not know which troubleshooting intents are supported by the NKG.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2"><strong>User expectation (NL):</strong> "The latency of service_X increased suddenly. What can I check?"<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<p id="section-4.3-3"><strong>Expected UIG behavior:</strong><a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.3-4.1">
+            <p id="section-4.3-4.1.1">Authenticate the requester and collect available context metadata;<a href="#section-4.3-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-4.2">
+            <p id="section-4.3-4.2.1">Consult the Intent Catalog and NKG capability metadata;<a href="#section-4.3-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-4.3">
+            <p id="section-4.3-4.3.1">Identify troubleshooting intents that are applicable to the target service and requester role;<a href="#section-4.3-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-4.4">
+            <p id="section-4.3-4.4.1">Suggest candidate investigation intents based on the user's natural-language request;<a href="#section-4.3-4.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-4.5">
+            <p id="section-4.3-4.5.1">Indicate which parameters are required before a selected intent can be executed;<a href="#section-4.3-4.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-4.6">
+            <p id="section-4.3-4.6.1">Return available investigation options in structured form and provide an operator-facing summary.<a href="#section-4.3-4.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.3-5"><strong>Example response:</strong><a href="#section-4.3-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.3-6">
+<pre>
+{
+  "target": "service_X",
+  "available_intents": [
+    "traffic_anomaly_investigation",
+    "affected_dependency_discovery",
+    "path_congestion_analysis",
+    "related_incident_correlation"
+  ],
+  "parameters_required_for_execution": [
+    "selected_intent",
+    "time_window"
+  ],
+  "available_output_formats": [
+    "structured_json",
+    "operator_summary"
+  ]
+}
+</pre><a href="#section-4.3-6" class="pilcrow">¶</a>
+</div>
+<p id="section-4.3-7"><strong>Output:</strong><a href="#section-4.3-7" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.3-8.1">
+            <p id="section-4.3-8.1.1">Structured result containing supported troubleshooting intents, required parameters for execution, and available output formats;<a href="#section-4.3-8.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-8.2">
+            <p id="section-4.3-8.2.1">Operator-facing summary: "The NKG supports several troubleshooting intents for service_X, including traffic anomaly investigation, affected dependency discovery, and path congestion analysis. A time window is required before execution. Please provide a time window or select an investigation intent."<a href="#section-4.3-8.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-5">
+      <h2 id="name-security-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-5-1">This document describes an interaction gateway for a NKG mediated by a UIG. Implementations MUST consider the following:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-2.1">
+          <p id="section-5-2.1.1">The graph engine/NKG service MUST enforce authentication and fine-grained authorization for all operations initiated by the UIG. This defense-in-depth requirement prevents the UIG from becoming a single point of failure.<a href="#section-5-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.2">
+          <p id="section-5-2.2.1">NL, DSL, and API inputs MUST be validated and constrained to prevent malformed, ambiguous, or unauthorized graph operations.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.3">
+          <p id="section-5-2.3.1">Intent inference mechanisms, including LLM-based components when used, MUST be constrained by policy, schema, and capability metadata before execution.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.4">
+          <p id="section-5-2.4.1">IR validation MUST be performed before any graph query, graph update, API call, or workflow execution.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.5">
+          <p id="section-5-2.5.1">Write operations (create/update/delete) MUST be restricted to explicitly authorized roles and scopes, and SHOULD be fully audited.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.6">
+          <p id="section-5-2.6.1">Responses MUST be filtered/redacted according to the requester's authorization scope to avoid data leakage.<a href="#section-5-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.7">
+          <p id="section-5-2.7.1">Audit logs SHOULD record the original request, inferred intent, IR, authorization decision, selected capabilities, execution plan, and result summary.<a href="#section-5-2.7.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-6">
+      <h2 id="name-iana-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-6-1">This document has no IANA actions.<a href="#section-6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-7">
+      <h2 id="name-informative-references">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="I-D.mackey-nmop-kg-for-netops">[I-D.mackey-nmop-kg-for-netops]</dt>
+      <dd>
+<span class="refAuthor">Mackey, M.</span>, <span class="refAuthor">Claise, B.</span>, <span class="refAuthor">Graf, T.</span>, <span class="refAuthor">Keller, H.</span>, <span class="refAuthor">Voyer, D.</span>, <span class="refAuthor">Lucente, P.</span>, and <span class="refAuthor">I. D. Martinez-Casanueva</span>, <span class="refTitle">"Knowledge Graph Framework for Network Operations"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-mackey-nmop-kg-for-netops-04</span>, <time datetime="2026-04-07" class="refDate">7 April 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-mackey-nmop-kg-for-netops-04">https://datatracker.ietf.org/doc/html/draft-mackey-nmop-kg-for-netops-04</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.marcas-nmop-knowledge-graph-yang">[I-D.marcas-nmop-knowledge-graph-yang]</dt>
+      <dd>
+<span class="refAuthor">Martinez-Casanueva, I. D.</span>, <span class="refAuthor">Rodriguez, L. C.</span>, and <span class="refAuthor">P. Martinez-Julia</span>, <span class="refTitle">"Knowledge Graphs for YANG-based Network Management"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-marcas-nmop-knowledge-graph-yang-05</span>, <time datetime="2024-10-21" class="refDate">21 October 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-marcas-nmop-knowledge-graph-yang-05">https://datatracker.ietf.org/doc/html/draft-marcas-nmop-knowledge-graph-yang-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.pang-nmop-kg-for-traffic-monitoring-analysis">[I-D.pang-nmop-kg-for-traffic-monitoring-analysis]</dt>
+      <dd>
+<span class="refAuthor">Pang, R.</span>, <span class="refAuthor">Zhao, J.</span>, <span class="refAuthor">Zhang, S.</span>, <span class="refAuthor">Lve, W.</span>, and <span class="refAuthor">H. Wang</span>, <span class="refTitle">"Knowledge Graph for Network Traffic Monitoring and Analysis"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-pang-nmop-kg-for-traffic-monitoring-analysis-02</span>, <time datetime="2025-11-05" class="refDate">5 November 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-pang-nmop-kg-for-traffic-monitoring-analysis-02">https://datatracker.ietf.org/doc/html/draft-pang-nmop-kg-for-traffic-monitoring-analysis-02</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.tailhardat-nmop-incident-management-noria">[I-D.tailhardat-nmop-incident-management-noria]</dt>
+    <dd>
+<span class="refAuthor">Tailhardat, L.</span>, <span class="refAuthor">Troncy, R.</span>, <span class="refAuthor">Chabot, Y.</span>, <span class="refAuthor">Ramparany, F.</span>, <span class="refAuthor">Folz, P.</span>, and <span class="refAuthor">B. Kavanagh</span>, <span class="refTitle">"Knowledge Graphs for Enhanced Cross-Operator Incident Management and Network Design"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-tailhardat-nmop-incident-management-noria-04</span>, <time datetime="2026-02-09" class="refDate">9 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-tailhardat-nmop-incident-management-noria-04">https://datatracker.ietf.org/doc/html/draft-tailhardat-nmop-incident-management-noria-04</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-A">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yong Cui</span></div>
+<div dir="auto" class="left"><span class="org">Tsinghua University</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100084</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:cuiyong@tsinghua.edu.cn" class="email">cuiyong@tsinghua.edu.cn</a>
+</div>
+<div class="url">
+<span>URI:</span>
+<a href="http://www.cuiyong.net/" class="url">http://www.cuiyong.net/</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Jialin Niu</span></div>
+<div dir="auto" class="left"><span class="org">Beijing University of Posts and Telecommunications</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100876</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:njl@bupt.edu.cn" class="email">njl@bupt.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Mingzhe Xing</span></div>
+<div dir="auto" class="left"><span class="org">Zhongguancun Laboratory</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100094</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:xingmz@zgclab.edu.cn" class="email">xingmz@zgclab.edu.cn</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Lei Zhang</span></div>
+<div dir="auto" class="left"><span class="org">Zhongguancun Laboratory</span></div>
+<div dir="auto" class="left"><span class="locality">Beijing</span></div>
+<div dir="auto" class="left"><span class="postal-code">100094</span></div>
+<div dir="auto" class="left"><span class="country-name">China</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:zhanglei@zgclab.edu.cn" class="email">zhanglei@zgclab.edu.cn</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
