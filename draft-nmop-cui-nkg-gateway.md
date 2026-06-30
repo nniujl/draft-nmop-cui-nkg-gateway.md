@@ -6,7 +6,6 @@ category: info
 submissiontype: IETF
 ipr: trust200902
 date: 2026-07-01
-# RFCXML version; the Internet-Draft revision is the -00/-01 suffix.
 v: 3
 # area: "OPS"
 # workgroup: "NMOP"
