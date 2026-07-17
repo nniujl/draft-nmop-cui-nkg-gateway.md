@@ -5,11 +5,11 @@
 Network Working Group                                             Y. Cui
 Internet-Draft                                       Tsinghua University
 Intended status: Informational                                    J. Niu
-Expires: 2 January 2027Beijing University of Posts and Telecommunications
+Expires: 18 January 2027Beijing University of Posts and Telecommunications
                                                                  M. Xing
                                                                 L. Zhang
                                                  Zhongguancun Laboratory
-                                                             1 July 2026
+                                                            17 July 2026
 
 
             A Gateway for Network Knowledge Graph Management
@@ -17,19 +17,17 @@ Expires: 2 January 2027Beijing University of Posts and Telecommunications
 
 Abstract
 
-   This document specifies an interaction gateway for Network Knowledge
-   Graphs (NKGs) to simplify graph-based network operations.  The
-   gateway architecture defines a Unified Intent Gateway (UIG) that
-   supports Natural Language (NL) requests from human operators and
-   Domain-Specific Language (DSL) or API directives from applications
-   and orchestration systems.  The UIG interprets user expectations and
-   application directives as structured intents, aligns them with the
-   NKG structure and exposed capabilities, and maps them to graph
-   queries, graph inferences, API calls, or operational workflows
-   through an Intermediate Representation (IR).  The gateway
-   architecture incorporates intent discovery, capability mapping,
-   policy enforcement, audit logging, and response synthesis to make
-   NKG-based operations more accessible, secure, and controllable.
+   This document describes an intent-aware interaction gateway
+   architecture for Network Knowledge Graphs (NKGs).  The Unified Intent
+   Gateway (UIG) supports Natural Language (NL) requests from human
+   operators and Domain-Specific Language (DSL) or API directives from
+   applications and orchestration systems.  It resolves supported
+   intents or operations against discoverable NKG capabilities,
+   validates them with authorization context, and mediates their
+   execution.  The document focuses on the functional boundary between
+   upstream consumers and downstream NKG capabilities, including
+   capability discovery, request validation, policy enforcement points,
+   structured results, and audit information.
 
 Discussion Venues
 
@@ -53,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 January 2027.
+   This Internet-Draft will expire on 18 January 2027.
 
 Copyright Notice
 
@@ -74,19 +72,21 @@ Table of Contents
    1.  Introduction
      1.1.  Motivation
      1.2.  Problem Statement
+     1.3.  Scope and Non-Goals
    2.  Terminology
-   3.  Gateway Architecture Overview
-     3.1.  Input and Interaction Layer
-     3.2.  Unified Intent Gateway
-     3.3.  Data and Knowledge Layer
-   4.  Use Cases
-     4.1.  Use Case 1: HTTP Flood Investigation (NL)
-     4.2.  Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)
-     4.3.  Use Case 3: Intent Discovery for Network Troubleshooting
+   3.  Relationship to Existing Work
+   4.  Gateway Architecture Overview
+     4.1.  Input and Interaction Layer
+     4.2.  Unified Intent Gateway
+     4.3.  Data and Knowledge Layer
+   5.  Use Cases
+     5.1.  Use Case 1: HTTP Flood Investigation (NL)
+     5.2.  Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)
+     5.3.  Use Case 3: Intent Discovery for Network Troubleshooting
            (NL)
-   5.  Security Considerations
-   6.  IANA Considerations
-   7.  Informative References
+   6.  Security Considerations
+   7.  IANA Considerations
+   8.  Informative References
    Authors' Addresses
 
 1.  Introduction
@@ -144,10 +144,11 @@ Table of Contents
       capability metadata, and should infer candidate intents from
       incomplete or ambiguous user expectations.
 
-   *  *Intent Representation:* The gateway should normalize interpreted
-      intents into an IR that captures the intent type, target scope,
-      constraints, context, required capabilities, authorization
-      context, and output preference.
+   *  *Request Representation:* The gateway should normalize interpreted
+      intents or validated application directives into an IR that
+      captures the request type, target scope, constraints, context,
+      required capabilities, authorization context, and output
+      preference.
 
    *  *Schema-aware Capability Mapping:* The gateway should map intents
       to graph queries, graph inferences, API calls, or workflows
@@ -173,6 +174,35 @@ Table of Contents
       requested, operator-facing natural-language summaries or
       explanations.
 
+1.3.  Scope and Non-Goals
+
+   This document focuses on the functional architecture and requirements
+   of a gateway that mediates access to NKG capabilities.  The
+   interoperability boundary considered by this document covers
+   capability discovery, request and authorization context, validation,
+   invocation, structured results, and audit information exchanged
+   between upstream consumers and downstream NKG capabilities.
+
+   The following are outside the scope of this document:
+
+   *  Defining a general intent language or intent lifecycle;
+
+   *  Defining a normative IR syntax or wire format;
+
+   *  Defining an NKG schema, ontology, or knowledge representation;
+
+   *  Defining a graph query language or graph-engine-specific execution
+      semantics;
+
+   *  Defining an authorization policy language or the lifecycle and
+      distribution of authorization policies;
+
+   *  Prescribing NL interpretation, LLM, reasoning, or execution-
+      planning algorithms;
+
+   *  Selecting or defining a transport protocol for the gateway
+      interfaces.
+
 2.  Terminology
 
    *  *NKG (Network Knowledge Graph):* A graph-based representation of
@@ -180,31 +210,32 @@ Table of Contents
       semantic relationships.
 
    *  *User Expectation:* An operator-level expression of a desired
-      operational outcome.  It is typically conveyed via Natural
-      Language (NL) and may be incomplete, ambiguous, or independent of
-      the underlying NKG schema.
+      operational outcome.  It may express an intent, is typically
+      conveyed via Natural Language (NL), and may be incomplete,
+      ambiguous, or independent of the underlying NKG schema.
 
    *  *Application Directive:* A structured request issued by an
       application, controller, orchestration system, or automation tool.
       It may be encoded using a Domain-Specific Language (DSL), an API
       request, or another machine-readable format.
 
-   *  *Intent:* A structured representation of a user expectation or
-      application directive after interpretation, clarification, and
-      alignment with the NKG structure and available capabilities.
+   *  *Intent:* A set of operational goals and outcomes defined in a
+      declarative manner without specifying how they are achieved or
+      implemented, as described in [RFC9315].
 
-   *  *Intent Catalog:* A registry of supported intent types and related
-      metadata exposed by the UIG.  It describes the capabilities
-      exposed through the UIG, including supported operational intents,
-      required parameters, mapped NKG capabilities, and supported output
-      formats.
+   *  *Intent Catalog:* A registry of supported intent and operation
+      types and related metadata exposed by the UIG.  It describes the
+      capabilities exposed through the UIG, including required
+      parameters, mapped NKG capabilities, and supported output formats.
 
-   *  *IR (Intermediate Representation):* A normalized and instantiated
-      representation of a specific intent before execution.  While the
-      Intent Catalog describes what the UIG can support, the IR captures
-      what the current request intends to do, including the intent type,
-      targets, constraints, context, required capabilities,
-      authorization context, and execution preferences.
+   *  *IR (Intermediate Representation):* A normalized, implementation-
+      internal representation of a resolved intent or validated
+      application directive before execution.  While the Intent Catalog
+      describes what the UIG can support, the IR captures the current
+      request, including its type, targets, constraints, context,
+      required capabilities, authorization context, and execution
+      preferences.  This document uses the IR to describe gateway
+      processing and does not define a normative syntax or wire format.
 
    *  *NKG Capability:* A query, inference, validation, update, or
       external operation that can be invoked over or through the NKG and
@@ -214,7 +245,32 @@ Table of Contents
       the UIG that helps parse user expectations, infer intents,
       complete missing slots, or generate operator-facing explanations.
 
-3.  Gateway Architecture Overview
+3.  Relationship to Existing Work
+
+   [RFC9315] defines common concepts and functions for Intent-Based
+   Networking, and [RFC9316] provides a classification of intent.  This
+   document uses those definitions and applies them to interactions with
+   NKG capabilities.
+
+   Related NMOP work describes an NKG framework for network operations,
+   YANG-based NKG representation, traffic monitoring and analysis, and
+   incident management [I-D.mackey-nmop-kg-for-netops]
+   [I-D.marcas-nmop-knowledge-graph-yang]
+   [I-D.pang-nmop-kg-for-traffic-monitoring-analysis]
+   [I-D.tailhardat-nmop-incident-management-noria].  This document does
+   not redefine those NKG models or use cases; it focuses on the gateway
+   that mediates access to their capabilities.
+
+   The Northbound Task Interface problem statement describes general
+   task delegation to a Network Management Agent
+   [I-D.wu-nmop-nma-nti-problem-statement].  The authorization policy
+   sharing model describes the representation, lifecycle management, and
+   distribution of authorization policy artifacts
+   [I-D.cabanillas-nmop-authz-policy-sharing-model].  This document is
+   limited to NKG interactions and treats authorization policies as
+   inputs to enforcement at the UIG and NKG boundaries.
+
+4.  Gateway Architecture Overview
 
    This gateway architecture adopts a three-layer architecture, with the
    Unified Intent Gateway (UIG) serving as the central mediator between
@@ -261,7 +317,7 @@ Table of Contents
    planning) -> NKG execution -> UIG response synthesis -> upstream
    response delivery.
 
-3.1.  Input and Interaction Layer
+4.1.  Input and Interaction Layer
 
    The upstream layer accepts inputs from human operators and automated
    systems:
@@ -287,14 +343,15 @@ Table of Contents
       subgraphs, audit references, and optional natural-language
       explanations.
 
-3.2.  Unified Intent Gateway
+4.2.  Unified Intent Gateway
 
-   The UIG receives requests, performs authentication/authorization,
-   consults the Intent Catalog to identify supported intent types,
-   resolves the request into an intent, normalizes the resolved intent
-   into an IR, and maps the IR to graph queries, graph inferences, API
-   calls, or execution plans.  After receiving results from the NKG or
-   related management systems, the UIG aggregates the returned data and
+   The UIG receives requests, performs authentication/authorization, and
+   consults the Intent Catalog to identify supported intent or operation
+   types.  It resolves a user expectation into an intent or validates a
+   direct application directive, normalizes the result into an IR, and
+   maps the IR to graph queries, graph inferences, API calls, or
+   execution plans.  After receiving results from the NKG or related
+   management systems, the UIG aggregates the returned data and
    synthesizes responses for upstream consumers.
 
 +-----------------------------------------------------------------------+
@@ -324,6 +381,16 @@ Table of Contents
    fine-grained policies for node, edge, subgraph, capability, and
    tenant access, so that the architecture does not rely on the UIG as a
    single point of failure.
+
+   Authorization is applied at two boundaries.  The UIG authorizes the
+   requested intent or operation, target scope, and required
+   capabilities before execution planning.  The NKG/graph engine then
+   authorizes the generated query or operation against data-level
+   policies.  For SPARQL, Cypher, or equivalent graph operations,
+   authorization can consider the operation type and referenced graph
+   resources, including nodes, edges, named graphs, subgraphs,
+   properties, and tenant-scoped data.  Returned results are filtered
+   according to the same authorization context.
 
    The UIG's main functions include:
 
@@ -367,7 +434,7 @@ Table of Contents
 
    4.  *Statement generation and execution orchestration*
 
-       *  Translate IR into standardized Cypher, SPARQL, or equivalent
+       *  Translate IR into supported Cypher, SPARQL, or equivalent
           graph query statements when graph queries are required;
 
        *  Construct execution plans for graph inference, external API
@@ -388,7 +455,7 @@ Table of Contents
        *  Optionally generate natural-language summaries or explanations
           for operators.
 
-3.3.  Data and Knowledge Layer
+4.3.  Data and Knowledge Layer
 
    This layer consists of the NKG, graph database/engine, reasoning
    functions, policy metadata, and optional external management APIs.
@@ -419,13 +486,13 @@ Table of Contents
    tenants using fine-grained access control.  This provides a
    foundational security safeguard for the overall gateway architecture.
 
-4.  Use Cases
+5.  Use Cases
 
    This section provides illustrative use cases demonstrating how the
    gateway architecture supports automated and controlled NKG
    interactions.
 
-4.1.  Use Case 1: HTTP Flood Investigation (NL)
+5.1.  Use Case 1: HTTP Flood Investigation (NL)
 
    *Scenario:* A service reports abnormal response latency, and an
    operator suspects an HTTP Flood.
@@ -490,7 +557,7 @@ ORDER BY r.request_rate DESC
       minutes; the evidence path is consistent with an HTTP Flood
       affecting the target service."
 
-4.2.  Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)
+5.2.  Use Case 2: Admin-Controlled NKG Node Maintenance (DSL)
 
    *Scenario:* A network administrator or authorized inventory system
    dynamically maintains the NKG by creating, updating, or deleting
@@ -543,7 +610,7 @@ ORDER BY r.request_rate DESC
       "affected_nodes": ["FW1"], "audit_reference": {"trace_id": "req-
       9a8b7c6d"}}
 
-4.3.  Use Case 3: Intent Discovery for Network Troubleshooting (NL)
+5.3.  Use Case 3: Intent Discovery for Network Troubleshooting (NL)
 
    *Scenario:* An operator observes that a service has degraded latency,
    but does not know which troubleshooting intents are supported by the
@@ -601,7 +668,7 @@ ORDER BY r.request_rate DESC
       time window is required before execution.  Please provide a time
       window or select an investigation intent."
 
-5.  Security Considerations
+6.  Security Considerations
 
    This document describes an interaction gateway for a NKG mediated by
    a UIG.  Implementations MUST consider the following:
@@ -610,6 +677,10 @@ ORDER BY r.request_rate DESC
       grained authorization for all operations initiated by the UIG.
       This defense-in-depth requirement prevents the UIG from becoming a
       single point of failure.
+
+   *  Authorization MUST be evaluated against the generated graph query
+      or operation after translation.  Authorization of the original NL,
+      DSL, or API input alone is not sufficient.
 
    *  NL, DSL, and API inputs MUST be validated and constrained to
       prevent malformed, ambiguous, or unauthorized graph operations.
@@ -632,11 +703,19 @@ ORDER BY r.request_rate DESC
       IR, authorization decision, selected capabilities, execution plan,
       and result summary.
 
-6.  IANA Considerations
+7.  IANA Considerations
 
    This document has no IANA actions.
 
-7.  Informative References
+8.  Informative References
+
+   [I-D.cabanillas-nmop-authz-policy-sharing-model]
+              Rodriguez, L. C., Lopez, D., Pérez, A. M., and P.
+              Martinez-Julia, "Model for distributed authorization
+              policy sharing", Work in Progress, Internet-Draft, draft-
+              cabanillas-nmop-authz-policy-sharing-model-03, 12 June
+              2026, <https://datatracker.ietf.org/doc/html/draft-
+              cabanillas-nmop-authz-policy-sharing-model-03>.
 
    [I-D.mackey-nmop-kg-for-netops]
               Mackey, M., Claise, B., Graf, T., Keller, H., Voyer, D.,
@@ -658,9 +737,9 @@ ORDER BY r.request_rate DESC
               Pang, R., Zhao, J., Zhang, S., Lve, W., and H. Wang,
               "Knowledge Graph for Network Traffic Monitoring and
               Analysis", Work in Progress, Internet-Draft, draft-pang-
-              nmop-kg-for-traffic-monitoring-analysis-02, 5 November
-              2025, <https://datatracker.ietf.org/doc/html/draft-pang-
-              nmop-kg-for-traffic-monitoring-analysis-02>.
+              nmop-kg-for-traffic-monitoring-analysis-03, 6 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-pang-nmop-kg-
+              for-traffic-monitoring-analysis-03>.
 
    [I-D.tailhardat-nmop-incident-management-noria]
               Tailhardat, L., Troncy, R., Chabot, Y., Ramparany, F.,
@@ -670,6 +749,25 @@ ORDER BY r.request_rate DESC
               incident-management-noria-04, 9 February 2026,
               <https://datatracker.ietf.org/doc/html/draft-tailhardat-
               nmop-incident-management-noria-04>.
+
+   [I-D.wu-nmop-nma-nti-problem-statement]
+              Wu, B., Wang, M., XingZhao, Ceccarelli, D., Zheng, H., and
+              J. Zhou, "Problem Statement for Standardizing the
+              northbound Task Interface (NTI) of the Network Management
+              Agent", Work in Progress, Internet-Draft, draft-wu-nmop-
+              nma-nti-problem-statement-00, 6 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-wu-nmop-nma-
+              nti-problem-statement-00>.
+
+   [RFC9315]  Clemm, A., Ciavaglia, L., Granville, L. Z., and J.
+              Tantsura, "Intent-Based Networking - Concepts and
+              Definitions", RFC 9315, DOI 10.17487/RFC9315, October
+              2022, <https://www.rfc-editor.org/rfc/rfc9315>.
+
+   [RFC9316]  Li, C., Havel, O., Olariu, A., Martinez-Julia, P., Nobre,
+              J., and D. Lopez, "Intent Classification", RFC 9316,
+              DOI 10.17487/RFC9316, October 2022,
+              <https://www.rfc-editor.org/rfc/rfc9316>.
 
 Authors' Addresses
 
